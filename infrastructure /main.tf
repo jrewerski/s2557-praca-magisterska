@@ -103,7 +103,7 @@ resource "google_pubsub_topic" "deployment-topic" {
 resource "google_cloudbuild_trigger" "main-pipeline-trigger" {
   project     = var.gcp_project_id
   location    = var.gcp_region
-  name        = "deployment-trigger-terraform"
+  name        = "training-trigger-terraform"
   description = "Uruchamia główny potok CI/CD po push do gałęzi main"
 
   repository_event_config {

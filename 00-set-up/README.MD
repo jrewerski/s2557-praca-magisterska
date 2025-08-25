@@ -22,20 +22,9 @@
     gcloud config set project TWOJ_PROJECT_ID
     ```
 
-### Krok 2: Wdrożenie infrastruktury za pomocą Terraform
+### Krok 2: Bezpośrednie łączenie Cloud Build z Twoim repozytorium GitHub
 
-Wszystkie poniższe komendy wykonuj w folderze `infrastructure/`.
-
-1.  **Skonfiguruj zmienne:**
-    Otwórz plik `infrastructure/terraform.tfvars` i ustaw `gcp_project_id`. Możesz również dostosować nazwy bucketów.
-
-2.  **Zainicjalizuj Terraform:**
-    Ta komenda pobierze niezbędne wtyczki dostawcy (providers).
-    ```bash
-    terraform init
-    ```
-
-### Krok 3: Bezpośrednie łączenie Cloud Build z Twoim repozytorium GitHub
+Jest to **jednorazowy krok**, który autoryzuje Google Cloud do dostępu do repozytorium.
 
 1.  Przejdź na stronę aplikacji Cloud Build w GitHub Marketplace:
     **[APLIKACJA CLOUD BUILD](https://github.com/marketplace/google-cloud-build)**
@@ -60,7 +49,7 @@ Wszystkie poniższe komendy wykonuj w folderze `infrastructure/`.
 
 11. **Połączenie z GitHub zostało ustanowione!** Nie musisz tworzyć triggera w kreatorze.
 
-### Krok 4: Skonfiguruj i wdróż Trigger przez Terraform
+### Krok 3: Wdrożenie infrastruktury i triggerów przez Terraform
 
 1.  **Znajdź identyfikator połączenia**:
     * Przejdź do [konsoli Cloud Build](https://console.cloud.google.com/cloud-build/repositories) i kliknij nazwę swojego połączenia. Skopiuj jego pełny identyfikator z paska adresu lub szczegółów. Będzie on w formacie: `projects/NAZWA-PROJEKTU/locations/REGION/connections/NAZWA-POLACZENIA`.
@@ -68,12 +57,24 @@ Wszystkie poniższe komendy wykonuj w folderze `infrastructure/`.
 2.  **Zaktualizuj plik `terraform.tfvars`**:
     * Otwórz plik `infrastructure/terraform.tfvars`.
     * Wklej skopiowany identyfikator do zmiennej `github_connection_id`.
-    * Upewnij się, że `github_repo_name` jest poprawnie ustawiony.
+    * Upewnij się, że zmienne `gcp_project_id`, `github_user_or_org` oraz `github_repo_name` są poprawnie ustawione.
+    * Dostosuj nazwy bucketów (`vertex_ai_bucket_name`, etc.), aby były unikalne dla Twojego projektu.
 
-3.  **Wdróż Trigger**:
-    Uruchom ponownie `terraform apply`. Tym razem Terraform użyje istniejącego połączenia, aby stworzyć w pełni skonfigurowany trigger.
+3.  **Zainicjalizuj i wdróż infrastrukturę:**
+    Wszystkie poniższe komendy wykonuj w folderze `infrastructure/`.
     ```bash
+    terraform init
     terraform apply
     ```
+    Terraform użyje istniejącego połączenia, aby powiązać repozytorium i stworzyć oba w pełni skonfigurowane triggery.
 
-### Krok 5: Uruchomienie potoku
+### Krok 4: Uruchomienie potoku
+
+Po pomyślnym zastosowaniu zmian, system jest w pełni aktywny.
+
+1.  **Wypchnij zmiany do gałęzi `main`** swojego repozytorium.
+2.  Automatycznie uruchomi się trigger `training-trigger-terraform`, który skompiluje oba potoki i uruchomi potok treningowy.
+3.  Po pomyślnym zakończeniu potoku treningowego, jeśli model spełni kryteria, do tematu Pub/Sub zostanie wysłana wiadomość.
+4.  Trigger `trigger-deployment-from-pubsub` wykryje wiadomość i uruchomi proces wdrożenia, który będzie czekał na Twoje **ręczne zatwierdzenie** w konsoli Cloud Build.
+
+Możesz śledzić postęp w konsoli Google Cloud w sekcjach **Cloud Build** oraz **Vertex AI -> Pipelines**.
