@@ -1,4 +1,4 @@
-gcp_project_id = "mlops-2137"
+gcp_project_id = ""
 vertex_ai_bucket_name = "s25537-mlops-vertex-ai-bucket"
 artifacts_bucket_name = "s25537-mlops-artifacts-bucket"
 data_bucket_name      = "s25537-mlops-data-bucket"
