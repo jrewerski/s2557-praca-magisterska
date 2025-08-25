@@ -1,0 +1,12 @@
+kfp
+pandas==2.2.2
+pyarrow
+scikit-learn==1.5.0
+gcsfs==2024.6.0
+fsspec
+click==8.1.7
+docstring-parser
+urllib3
+protobuf
+google-cloud-aiplatform==1.55.0
+google-cloud-pubsub==2.13.4

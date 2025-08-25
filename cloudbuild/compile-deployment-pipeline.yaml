@@ -1,0 +1,21 @@
+# Ten plik służy jedynie do kompilacji potoku wdrożeniowego i umieszczenia go w GCS.
+# Uruchamia się  tylko wtedy, gdy zostanie zmieniona logika w pliku `deployment-pipeline/runner.py`.
+steps:
+- name: 'python:3.9'
+  entrypoint: 'pip'
+  args: ['install', '-r', 'requirements.txt', '--user']
+  id: 'Install Dependencies'
+
+  # Krok kompilacji potoku
+- name: 'python:3.9'
+  id: Compile Deployment Pipeline
+  entrypoint: 'python3'
+  args: ['03-vertex-ai-pipelines/deployment-pipeline/runner.py']
+
+# Krok przesłania definicji do GCS
+- name: 'gcr.io/cloud-builders/gsutil'
+  id: Upload to GCS
+  args: ['cp', 'pipeline.json', '$_PIPELINE_GCS_PATH/deployment_pipeline.json']
+  waitFor: ['Compile Deployment Pipeline']
+options:
+  logging: CLOUD_LOGGING_ONLY

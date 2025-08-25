@@ -1,0 +1,25 @@
+# Plik: run-deployment-pipeline.yaml
+steps:
+- name: 'python:3.9'
+  id: 'Install-Dependencies'
+  entrypoint: 'pip'
+  args: ['install', '-r', 'requirements.txt', '--user']
+
+- name: 'python:3.9'
+  id: 'Trigger-Deployment-Pipeline'
+  waitFor: ['Install-Dependencies']
+  entrypoint: 'python3'
+  args:
+    - '03-vertex-ai-pipelines/trigger_pipeline.py'
+    - '--project-id=${PROJECT_ID}'
+    - '--region=${_REGION}'
+    - '--pipeline-spec-uri=${_PIPELINE_GCS_PATH}/deployment_pipeline.json'
+    - '--display-name=run-deployment-pubsub-${BUILD_ID}'
+    - '--service-account=${_SERVICE_ACCOUNT}'
+    - '--parameter-file=config/deployment-params.json'
+    - '--pipeline-root=${_PIPELINE_GCS_PATH}'
+    - '--endpoint-name=${_ENDPOINT_NAME}'
+    - '--model-resource-name=${_MODEL_RESOURCE_NAME}'
+
+options:
+  logging: CLOUD_LOGGING_ONLY
